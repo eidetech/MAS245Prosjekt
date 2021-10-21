@@ -41,17 +41,17 @@ int main()
 	while(1)
 	{
 		// Increase brightness of LED
-		for(int i = 0;i < 255;i++)
+		for(int i = 0;i <= 255;i++)
 		{
 			outputPWM(i);
-			_delay_loop_2(1500);
+			_delay_loop_2(500);
 		}
 		
 		// Decrease brightness of LED
-		for(int i = 255; i > 0; i--)
+		for(int i = 255; i >= 0; i--)
 		{
 			outputPWM(i);
-			_delay_loop_2(1500);
+			_delay_loop_2(500);
 		}
 	}
 }
