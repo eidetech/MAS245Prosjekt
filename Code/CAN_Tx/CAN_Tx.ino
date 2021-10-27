@@ -27,7 +27,8 @@ void setup(void)
   delay(1000);
   Serial.println(F("Hello Teensy 3.6 dual CAN Test."));
 
-  Can0.begin();  
+  Can0.begin(250000);  
+  Can1.begin(250000);  
 
   //if using enable pins on a transceiver they need to be set on
   pinMode(2, OUTPUT);
@@ -37,7 +38,7 @@ void setup(void)
   digitalWrite(35, HIGH);
 
   msg.ext = 0;
-  msg.id = 0x00;
+  msg.id = 0x05;
   msg.len = 8;
   msg.buf[0] = 0x00;
   msg.buf[1] = 0x11;
@@ -53,8 +54,16 @@ void setup(void)
 // -------------------------------------------------------------
 void loop(void)
 {
+  CAN_message_t inMsg;
   msg.buf[0]++;
   msg.buf[7]++;
-  Can0.write(msg); 
+  Can0.write(msg);
+
+  while (Can1.available()) 
+  {
+    Can1.read(inMsg);
+    Serial.print("CAN bus 1 reading: ");
+    Serial.println(inMsg.buf[0]);
+  }
   delay(20);
 }
