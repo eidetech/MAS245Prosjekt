@@ -5,8 +5,8 @@
 
 enum side
 {
-  LEFT = 128-3,
-  RIGHT = 0
+  LEFT = 128-4,
+  RIGHT = 1
 };
 
 class Paddle

@@ -27,7 +27,7 @@ Paddle::~Paddle()
 // Function for moving paddle upwards
 void Paddle::moveUp()
 {
-  if(paddle_y < (SCREEN_HEIGHT-paddleHeight))
+  if(paddle_y < (SCREEN_HEIGHT-paddleHeight-1))
   {
   paddle_y++;
   }
@@ -36,7 +36,7 @@ void Paddle::moveUp()
 // Function for moving paddle downwards
 void Paddle::moveDown()
 {
-  if(paddle_y > 0)
+  if(paddle_y > 1)
   {
   paddle_y--;
   }
