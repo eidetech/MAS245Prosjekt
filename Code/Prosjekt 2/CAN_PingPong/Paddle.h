@@ -1,14 +1,30 @@
+#ifndef Paddle_h
+#define Paddle_h
+
+#define SCREEN_HEIGHT 64
+
+enum side
+{
+  LEFT = 128-3,
+  RIGHT = 0
+};
+
 class Paddle
 {
-private:
-  /* data */
 public:
-int paddleWidth = 3;
-int paddleHeight = 20;
-int paddle_x = 0;
-int paddle_y = (SCREEN_HEIGHT/2)-(paddleHeight/2);
+  int paddleWidth;
+  int paddleHeight;
+  int paddle_x;
+  int paddle_y;
 
-
-  Paddle(/* args */);
+  Paddle(side paddleSide);
   ~Paddle();
+
+  void moveUp();
+  void moveDown();
+  
+private:
+
 };
+
+#endif
