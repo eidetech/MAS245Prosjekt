@@ -11,7 +11,7 @@ public:
   int xDir = 1;
   int yDir= 1;
   int r = 3;
-  side turn = RIGHT;
+  side turn = LEFT;
 
   void moveBall();
   void limitCheck();

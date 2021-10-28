@@ -19,11 +19,11 @@ void Ball::moveBall()
   if(xDir == 1)
   {
     x++;
-    turn = RIGHT;
+    turn = LEFT;
   }else
   {
     x--;
-    turn = LEFT;
+    turn = RIGHT;
   }
   if(yDir == 1)
   {
