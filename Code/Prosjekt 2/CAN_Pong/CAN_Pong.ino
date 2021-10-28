@@ -63,9 +63,7 @@ void setup() {
   display.fillScreen(BLACK);
   display.setTextSize(1);
   display.setTextColor(WHITE);
-}
 
-void loop() {
   // Paddle CAN message
   TX_Paddle.id = gruppeNr + 20; // 22
   TX_Paddle.len = 7;
@@ -75,17 +73,19 @@ void loop() {
   TX_Paddle.buf[3] = scoreMaster;
   TX_Paddle.buf[4] = scoreSlave;
   TX_Paddle.buf[5] = gameState;
-
+  
   // Ball CAN message
   TX_Ball.id = gruppeNr + 50; // 52
   TX_Ball.len = 2;
   TX_Ball.buf[0] = ball.x;
   TX_Ball.buf[1] = ball.y;
-  
+}
+
+void loop() {  
   selectMaster();
 
   readJoy();
-  
+
   if(joyClick == 0 && isMaster)
   {
     // Set initial entity settings (both master and slave)
@@ -106,6 +106,7 @@ void loop() {
     TX_Paddle.buf[5] = gameState;
     sendCAN();
   }
+  
   receiveCAN();
   // Game sequence
   while(gameState == true)
@@ -140,17 +141,9 @@ void receiveCAN()
   if(Can0.available())
     {
       Can0.read(RX);
-      if(RX.id == 22 && !isMaster)
+      if(RX.id == 22 && RX.buf[5] == true && !isMaster)
       {
-      gameState = RX.buf[5];
-      leftPaddle.paddle_y = RX.buf[1];
-      }
-      if(RX.id == 22 && isMaster)
-      {
-        rightPaddle.paddle_y = RX.buf[2];
-      }else
-      {
-        leftPaddle.paddle_y = RX.buf[1];
+        gameState = true;
       }
     }
 }
@@ -186,6 +179,8 @@ void draw()
   display.drawRect(0, 0, 128, 64, WHITE); // Rectangle around whole display
   if(isMaster)
   {
+    display.setCursor(1,1);
+    display.print("MASTER");
     display.setCursor(SCREEN_WIDTH/2 - 20, 2);
     display.print("Slave: ");
     display.println(scoreSlave);
@@ -193,7 +188,7 @@ void draw()
     display.print("Master: ");
     display.println(scoreMaster);
     
-    display.fillRect(leftPaddle.paddle_x, leftPaddle.paddle_y, leftPaddle.paddleWidth, leftPaddle.paddleHeight,  WHITE); // Left paddle
+    display.fillRect(leftPaddle.paddle_x, TX_Paddle.buf[1], leftPaddle.paddleWidth, leftPaddle.paddleHeight,  WHITE); // Left paddle
     display.fillRect(rightPaddle.paddle_x, rightPaddle.paddle_y, leftPaddle.paddleWidth, leftPaddle.paddleHeight,  WHITE); // Right paddle
   
     //ball.moveBall();
@@ -211,6 +206,8 @@ void draw()
     display.fillCircle(ball.x, ball.y, ball.r, WHITE); // Ball
   }else
   {
+    display.setCursor(1,1);
+    display.print("SLAVE");
     display.setCursor(SCREEN_WIDTH/2 - 20, 2);
     display.print("Slave: ");
     display.println(scoreSlave);
@@ -218,9 +215,11 @@ void draw()
     display.print("Master: ");
     display.println(scoreMaster);
 
-    display.fillRect(leftPaddle.paddle_x, leftPaddle.paddle_y, leftPaddle.paddleWidth, leftPaddle.paddleHeight,  WHITE); // Left paddle
-    display.fillRect(rightPaddle.paddle_x, rightPaddle.paddle_y, leftPaddle.paddleWidth, leftPaddle.paddleHeight,  WHITE); // Right paddle
-  
+    if(RX.id == 22)
+    {
+    display.fillRect(leftPaddle.paddle_x, TX_Paddle.buf[1], leftPaddle.paddleWidth, leftPaddle.paddleHeight,  WHITE); // Left paddle
+    display.fillRect(rightPaddle.paddle_x, RX.buf[2], leftPaddle.paddleWidth, leftPaddle.paddleHeight,  WHITE); // Right paddle
+    }
     //ball.moveBall();
     ball.limitCheck();
       // Left paddle settings
