@@ -44,7 +44,8 @@ int gruppeNr = 2;
 int scoreMaster = 0;
 int scoreSlave = 0;
 
-static CAN_message_t TX;
+static CAN_message_t TX_Ball;
+static CAN_message_t TX_Paddle;
 static CAN_message_t RX;
 
 void setup() {
@@ -61,15 +62,31 @@ void setup() {
   display.fillScreen(BLACK);
   display.setTextSize(1);
   display.setTextColor(WHITE);
-
 }
 
 void loop() {
 
+  // Paddle CAN message
+  TX_Paddle.id = gruppeNr + 20;
+  TX_Paddle.len = 8;
+  TX_Paddle.buf[0] = joyClick;
+  TX_Paddle.buf[1] = leftPaddle.paddle_y;
+  TX_Paddle.buf[2] = rightPaddle.paddle_y;
+  TX_Paddle.buf[3] = scoreMaster;
+  TX_Paddle.buf[4] = scoreSlave;
+  TX_Paddle.buf[5] = gameState;
+
+
+  // Ball CAN message
+  TX_Ball.id = gruppeNr + 50;
+  TX_Ball.len = 8;
+  TX_Ball.buf[0] = ball.x;
+  TX_Ball.buf[1] = ball.y;
+  
+
   // Loop for selecting master
   while(gameStart)
   {
-
     // Starting screen before selecting master
     display.setCursor(25,25);
     display.print("Press joy");
@@ -82,7 +99,7 @@ void loop() {
     {
       Can0.read(RX);
       
-      if (RX.buf[2] == 0)
+      if (RX.id == 22 && RX.buf[0] == 0)
       {
         isMaster = false;
         gameStart = false;
@@ -101,24 +118,27 @@ void loop() {
     }
   }
 
+  // Master in control of when to start after gameOver
   readJoy();
+  receiveCAN();
+  Serial.println("Outside");
   if(joyClick == 0 && isMaster)
   {
-    // Set initial entity settings
+    Serial.println("Inside");
+    // Set initial entity settings (both master and slave)
     gameState = true;
+    TX_Paddle.buf[5] = gameState; // Send gameState to slave
+    sendCAN();
     ball.x = SCREEN_WIDTH/2;
     ball.y = SCREEN_HEIGHT/2;
 
     leftPaddle.paddle_y = (SCREEN_HEIGHT/2)-(leftPaddle.paddleHeight/2);
     rightPaddle.paddle_y = (SCREEN_HEIGHT/2)-(rightPaddle.paddleHeight/2);
   }
-
-  while(gameState == true){
+  // Game sequence
+  while(gameState == true)
+  {
   readJoy(); // Read device joystick
-  if(!isMaster)
-    {
-      sendCAN();
-    }
   receiveCAN(); // Read slave joystick
   movePaddle(); // Move paddles based on read data
   draw(); // Draw
@@ -139,12 +159,8 @@ void readJoy()
 
 void sendCAN()
 {
-  TX.id = gruppeNr + 20;
-  TX.len = 8;
-  TX.buf[0] = joyUp;
-  TX.buf[1] = joyDown;
-  TX.buf[2] = joyClick;
-  Can0.write(TX);
+  //Can0.write(TX_Ball);
+  Can0.write(TX_Paddle);
 }
 
 void receiveCAN()
@@ -152,30 +168,41 @@ void receiveCAN()
   if(Can0.available())
     {
       Can0.read(RX);
+      if(RX.id == 22)
+      {
+      gameState = RX.buf[5];
+      }
+      if(RX.id == 22 && isMaster)
+      {
+        rightPaddle.paddle_y = RX.buf[2];
+      }else
+      {
+        leftPaddle.paddle_y = RX.buf[1];
+      }
     }
 }
 
-
 void movePaddle()
 {
-  //if(ball.turn == RIGHT)
-  //{
-    if(RX.buf[0] == 1)
+  if(!isMaster)
+  {
+    if(joyUp == 0)
     {
       leftPaddle.moveUp();
-    }else if(RX.buf[1] == 1)
+    }else if(joyDown == 0)
     {
       leftPaddle.moveDown();
     }
-  //}else if(ball.turn == LEFT)
-  //{
+  }
+  else
+  {
     if(joyUp == 0)
     {
       rightPaddle.moveUp();
     }else if(joyDown == 0)
     {
       rightPaddle.moveDown();
-   // }
+    }
   }
 }
 
@@ -186,30 +213,59 @@ void draw()
   {
     display.setCursor(1,1);
     display.print("MASTER");
-  }
-  display.setCursor(SCREEN_WIDTH/2 - 20, 2);
-  display.print("Slave: ");
-  display.println(scoreSlave);
-  display.setCursor(SCREEN_WIDTH/2 - 20, 10);
-  display.print("Master: ");
-  display.println(scoreMaster);
   
-  display.fillRect(leftPaddle.paddle_x, leftPaddle.paddle_y, leftPaddle.paddleWidth, leftPaddle.paddleHeight,  WHITE); // Left paddle
-  display.fillRect(rightPaddle.paddle_x, rightPaddle.paddle_y, leftPaddle.paddleWidth, leftPaddle.paddleHeight,  WHITE); // Right paddle
+    display.setCursor(SCREEN_WIDTH/2 - 20, 2);
+    display.print("Slave: ");
+    display.println(scoreSlave);
+    display.setCursor(SCREEN_WIDTH/2 - 20, 10);
+    display.print("Master: ");
+    display.println(scoreMaster);
+    
+    display.fillRect(leftPaddle.paddle_x, leftPaddle.paddle_y, leftPaddle.paddleWidth, leftPaddle.paddleHeight,  WHITE); // Left paddle
+    display.fillRect(rightPaddle.paddle_x, rightPaddle.paddle_y, leftPaddle.paddleWidth, leftPaddle.paddleHeight,  WHITE); // Right paddle
+  
+    ball.moveBall();
+    ball.limitCheck();
+      // Left paddle settings
+    if(ball.x > (SCREEN_WIDTH - 2*ball.r - leftPaddle.paddleWidth) && (ball.y > leftPaddle.paddle_y && ball.y < leftPaddle.paddle_y+leftPaddle.paddleHeight))
+    {
+      ball.xDir = ball.xDir*(-1);
+      // Right paddle settings
+    }else if(ball.x < (2*ball.r + rightPaddle.paddleWidth) && (ball.y > rightPaddle.paddle_y && ball.y < rightPaddle.paddle_y+rightPaddle.paddleHeight))
+    {
+      ball.xDir = ball.xDir*(-1);
+    }
+    
+    display.fillCircle(ball.x, ball.y, ball.r, WHITE); // Ball
+  }else
+  {
+    display.setCursor(1,1);
+    display.print("SLAVE");
+  
+    display.setCursor(SCREEN_WIDTH/2 - 20, 2);
+    display.print("Slave: ");
+    display.println(scoreSlave);
+    display.setCursor(SCREEN_WIDTH/2 - 20, 10);
+    display.print("Master: ");
+    display.println(scoreMaster);
 
-  ball.moveBall();
-  ball.limitCheck();
-    // Left paddle settings
-  if(ball.x > (SCREEN_WIDTH - 2*ball.r - leftPaddle.paddleWidth) && (ball.y > leftPaddle.paddle_y && ball.y < leftPaddle.paddle_y+leftPaddle.paddleHeight))
-  {
-    ball.xDir = ball.xDir*(-1);
-    // Right paddle settings
-  }else if(ball.x < (2*ball.r + rightPaddle.paddleWidth) && (ball.y > rightPaddle.paddle_y && ball.y < rightPaddle.paddle_y+rightPaddle.paddleHeight))
-  {
-    ball.xDir = ball.xDir*(-1);
-  }
+    display.fillRect(leftPaddle.paddle_x, leftPaddle.paddle_y, leftPaddle.paddleWidth, leftPaddle.paddleHeight,  WHITE); // Left paddle
+    display.fillRect(rightPaddle.paddle_x, rightPaddle.paddle_y, leftPaddle.paddleWidth, leftPaddle.paddleHeight,  WHITE); // Right paddle
   
-  display.fillCircle(ball.x, ball.y, ball.r, WHITE); // Ball
+    ball.moveBall();
+    ball.limitCheck();
+      // Left paddle settings
+    if(ball.x > (SCREEN_WIDTH - 2*ball.r - leftPaddle.paddleWidth) && (ball.y > leftPaddle.paddle_y && ball.y < leftPaddle.paddle_y+leftPaddle.paddleHeight))
+    {
+      ball.xDir = ball.xDir*(-1);
+      // Right paddle settings
+    }else if(ball.x < (2*ball.r + rightPaddle.paddleWidth) && (ball.y > rightPaddle.paddle_y && ball.y < rightPaddle.paddle_y+rightPaddle.paddleHeight))
+    {
+      ball.xDir = ball.xDir*(-1);
+    }
+    
+    display.fillCircle(ball.x, ball.y, ball.r, WHITE); // Ball
+  }
 }
 
 void gameOver()
@@ -217,6 +273,8 @@ void gameOver()
   if (ball.x < 0 || ball.x > SCREEN_WIDTH)
   {
     gameState = false;
+    TX_Paddle.buf[5] = gameState; // Send gameState to slave
+    sendCAN();
     display.fillScreen(BLACK);
     display.setCursor(25,25);
     if(ball.turn == RIGHT)
@@ -228,6 +286,5 @@ void gameOver()
       display.print("Point to Slave");
       scoreSlave += 1;
     }
-    display.display();
   }
 }
