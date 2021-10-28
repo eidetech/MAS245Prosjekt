@@ -1,0 +1,23 @@
+{
+    "configurations": [
+        {
+            "name": "Linux",
+            "includePath": [
+                "${workspaceFolder}/**",
+                "/home/marcus/Downloads/arduino-1.8.15",
+                "/home/marcus/Arduino",
+                "/home/marcus/Arduino/libraries/Adafruit_SSD1306",
+                "/home/marcus/Arduino/libraries/Adafruit_GFX_Library",
+                "/home/marcus/Downloads/arduino-1.8.15/hardware/teensy/avr/libraries/Wire",
+                "/home/marcus/Downloads/arduino-1.8.15/hardware/teensy/avr/libraries/SPI",
+                "/home/marcus/Downloads/arduino-1.8.15/hardware/teensy/avr/cores/teensy4"
+            ],
+            "defines": [],
+            "compilerPath": "/usr/bin/clang",
+            "cStandard": "c11",
+            "cppStandard": "c++14",
+            "intelliSenseMode": "linux-clang-x64"
+        }
+    ],
+    "version": 4
+}
