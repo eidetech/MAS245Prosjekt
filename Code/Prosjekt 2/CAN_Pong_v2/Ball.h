@@ -6,11 +6,11 @@
 class Ball : public Paddle
 {
 public:
-  int x = 128/2;
-  int y = 64/2;
-  int xDir = 1;
-  int yDir= 1;
-  int r = 3;
+  uint8_t x = 128/2;
+  uint8_t y = 64/2;
+  uint8_t xDir = 1;
+  uint8_t yDir= 1;
+  uint8_t r = 3;
   side turn = RIGHT;
 
   void moveBall();

@@ -40,7 +40,14 @@ bool gameState = false;
 bool gameStart = true;
 bool isMaster = false;
 bool endGame = false;
+bool updateGame = false;
 int gruppeNr = 2;
+int turn = 0;
+
+unsigned long currentMillis;
+unsigned long lastMillis = 0;
+const int updateRate = 10; // ms
+unsigned long millisDiff;
 
 int scoreMaster = 0;
 int scoreSlave = 0;
@@ -70,13 +77,14 @@ void setup() {
 
   // Paddle CAN message (for sending data to slave)
   TX_Paddle.id = gruppeNr + 20; // 22
-  TX_Paddle.len = 6;
+  TX_Paddle.len = 7;
   TX_Paddle.buf[0] = leftPaddle.paddle_y;
   TX_Paddle.buf[1] = rightPaddle.paddle_y;
   TX_Paddle.buf[2] = joyClick;
   TX_Paddle.buf[3] = scoreMaster;
   TX_Paddle.buf[4] = scoreSlave;
   TX_Paddle.buf[5] = gameState;
+  TX_Paddle.buf[6] = turn;
   
   // Ball CAN message (for sending data to slave)
   TX_Ball.id = gruppeNr + 50; // 52
@@ -93,39 +101,37 @@ void setup() {
 }
 
 void loop() {  
+  currentMillis = millis();
+  
   selectMaster();
-  resetGame();
-  //delay(2000);
+  readJoy();
+  receiveSlaveJoy();
   gameState = true;
 
-    // Game sequence
-    while(gameState == true)
+    millisDiff = currentMillis - lastMillis;
+    if(millisDiff >= updateRate)
     {
-      readJoy();
-      receiveSlaveJoy();
+      updateGame = true;
+    }
+    // Game sequence
+    while(gameState == true && updateGame == true)
+    {
       if(isMaster)
       {
       movePaddle(); // Move paddles based on read data
       }
       draw(); // Draw
-      if(isMaster)
-      {
       if (gameOver())
       {
         endGame = true;
       }
-      }
-
-      if(endGame && !isMaster)
-      {
-        display.fillScreen(BLACK);
-        display.setCursor(25,25);
-        display.print("Point to Master");
-      }
       display.display();
       display.fillScreen(BLACK);
-      delay(10);
+      //delay(10);
+      lastMillis = millis();
+      updateGame = false;
     }
+
 }
 
 void readJoy()
@@ -197,6 +203,13 @@ void draw()
 
     TX_Paddle.buf[0] = leftPaddle.paddle_y;
     TX_Paddle.buf[1] = rightPaddle.paddle_y;
+    if(ball.turn == LEFT)
+    {
+      TX_Paddle.buf[6] = 1;
+    }else
+    {
+      TX_Paddle.buf[6] = 0;
+    }
     Can0.write(TX_Paddle);
   
     ball.moveBall();
@@ -261,10 +274,24 @@ bool gameOver()
 {
   if (ball.x < 0 || ball.x > SCREEN_WIDTH)
   {
+
+    if(Can0.available())
+      {
+        Can0.read(RX_Paddle);
+        
+        if (RX_Paddle.id == 22)
+        {
+          turn = RX_Paddle.buf[6];
+          Serial.print("Turn: ");
+          Serial.println(turn);
+        }
+      }
     gameState = false;
     TX_Paddle.buf[5] = gameState; // Send gameState to slave
     display.fillScreen(BLACK);
     display.setCursor(25,25);
+    if(isMaster)
+    {
     if(ball.turn == RIGHT)
     {
       display.print("Point to Master");
@@ -274,10 +301,22 @@ bool gameOver()
       display.print("Point to Slave");
       scoreSlave += 1;
     }
+    }else
+    {
+      if(turn == 0)
+      {
+        display.print("Point to Master");
+      }else if(turn == 1)
+      {
+        display.print("Point to Slave");
+      }
+    }
+  resetGame();
   TX_Paddle.buf[3] = scoreMaster;
   TX_Paddle.buf[4] = scoreSlave;
   Can0.write(TX_Paddle);
-
+  display.display();
+  delay(1000);
   return true;
   }else
   {
