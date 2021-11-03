@@ -155,8 +155,8 @@ int main()
 		: "=w" (__count)
 		: "0" (__count)
 	);
-  d4:	84 ef       	ldi	r24, 0xF4	; 244
-  d6:	91 e0       	ldi	r25, 0x01	; 1
+  d4:	8c ed       	ldi	r24, 0xDC	; 220
+  d6:	95 e0       	ldi	r25, 0x05	; 5
   d8:	01 97       	sbiw	r24, 0x01	; 1
   da:	f1 f7       	brne	.-4      	; 0xd8 <main+0x1a>
 {
@@ -170,7 +170,7 @@ int main()
   e0:	cf ef       	ldi	r28, 0xFF	; 255
   e2:	d0 e0       	ldi	r29, 0x00	; 0
 			outputPWM(i);
-			_delay_loop_2(500);
+			_delay_loop_2(1500);
 		}
 		
 		// Decrease brightness of LED
@@ -181,12 +181,12 @@ int main()
 			outputPWM(i);
   e8:	8c 2f       	mov	r24, r28
   ea:	0e 94 5d 00 	call	0xba	; 0xba <_Z9outputPWMh>
-  ee:	84 ef       	ldi	r24, 0xF4	; 244
-  f0:	91 e0       	ldi	r25, 0x01	; 1
+  ee:	8c ed       	ldi	r24, 0xDC	; 220
+  f0:	95 e0       	ldi	r25, 0x05	; 5
   f2:	01 97       	sbiw	r24, 0x01	; 1
   f4:	f1 f7       	brne	.-4      	; 0xf2 <main+0x34>
 			outputPWM(i);
-			_delay_loop_2(500);
+			_delay_loop_2(1500);
 		}
 		
 		// Decrease brightness of LED

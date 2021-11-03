@@ -1,5 +1,5 @@
 #include <avr/io.h> // https://www.nongnu.org/avr-libc/user-manual/group__avr__io.html
-#define F_CPU 1000000UL // Set CPU speed of 1 MHz
+#define F_CPU 8000000UL // Set CPU speed of 8 MHz
 #include <util/delay_basic.h> // https://www.nongnu.org/avr-libc/user-manual/group__util__delay__basic.html
 
 // Datasheet: Microchip ATmega48/V/88/V/168/V - DS40002074A
@@ -44,14 +44,14 @@ int main()
 		for(int i = 0;i <= 255;i++)
 		{
 			outputPWM(i);
-			_delay_loop_2(500);
+			_delay_loop_2(1500);
 		}
 		
 		// Decrease brightness of LED
 		for(int i = 255; i >= 0; i--)
 		{
 			outputPWM(i);
-			_delay_loop_2(500);
+			_delay_loop_2(1500);
 		}
 	}
 }

@@ -1,31 +1,29 @@
 
-HelloWorld.elf:     file format elf32-avr
+interrupt.elf:     file format elf32-avr
 
 Sections:
 Idx Name          Size      VMA       LMA       File off  Algn
-  0 .data         00000000  00800100  00800100  00000108  2**0
+  0 .data         00000000  00800100  00800100  00000100  2**0
                   CONTENTS, ALLOC, LOAD, DATA
-  1 .text         000000b4  00000000  00000000  00000054  2**1
+  1 .text         000000ac  00000000  00000000  00000054  2**1
                   CONTENTS, ALLOC, LOAD, READONLY, CODE
-  2 .comment      00000030  00000000  00000000  00000108  2**0
+  2 .comment      00000030  00000000  00000000  00000100  2**0
                   CONTENTS, READONLY
-  3 .note.gnu.avr.deviceinfo 0000003c  00000000  00000000  00000138  2**2
+  3 .note.gnu.avr.deviceinfo 0000003c  00000000  00000000  00000130  2**2
                   CONTENTS, READONLY
-  4 .debug_aranges 00000020  00000000  00000000  00000174  2**0
+  4 .debug_aranges 00000020  00000000  00000000  0000016c  2**0
                   CONTENTS, READONLY, DEBUGGING
-  5 .debug_info   0000073e  00000000  00000000  00000194  2**0
+  5 .debug_info   00000670  00000000  00000000  0000018c  2**0
                   CONTENTS, READONLY, DEBUGGING
-  6 .debug_abbrev 0000067b  00000000  00000000  000008d2  2**0
+  6 .debug_abbrev 000005e9  00000000  00000000  000007fc  2**0
                   CONTENTS, READONLY, DEBUGGING
-  7 .debug_line   00000277  00000000  00000000  00000f4d  2**0
+  7 .debug_line   00000199  00000000  00000000  00000de5  2**0
                   CONTENTS, READONLY, DEBUGGING
-  8 .debug_frame  00000024  00000000  00000000  000011c4  2**2
+  8 .debug_frame  00000024  00000000  00000000  00000f80  2**2
                   CONTENTS, READONLY, DEBUGGING
-  9 .debug_str    00000410  00000000  00000000  000011e8  2**0
+  9 .debug_str    000003b8  00000000  00000000  00000fa4  2**0
                   CONTENTS, READONLY, DEBUGGING
- 10 .debug_loc    00000090  00000000  00000000  000015f8  2**0
-                  CONTENTS, READONLY, DEBUGGING
- 11 .debug_ranges 00000010  00000000  00000000  00001688  2**0
+ 10 .debug_ranges 00000010  00000000  00000000  0000135c  2**0
                   CONTENTS, READONLY, DEBUGGING
 
 Disassembly of section .text:
@@ -66,59 +64,53 @@ Disassembly of section .text:
   70:	de bf       	out	0x3e, r29	; 62
   72:	cd bf       	out	0x3d, r28	; 61
   74:	0e 94 40 00 	call	0x80	; 0x80 <main>
-  78:	0c 94 58 00 	jmp	0xb0	; 0xb0 <_exit>
+  78:	0c 94 54 00 	jmp	0xa8	; 0xa8 <_exit>
 
 0000007c <__bad_interrupt>:
   7c:	0c 94 00 00 	jmp	0	; 0x0 <__vectors>
 
 00000080 <main>:
-#include <util/delay.h>
-
-
-int main(void)
+   y = 0-255 value
+   dutyCycle% = x*y
+*/
+int main()
 {
-    DDRD = (1U << 6U);
-  80:	80 e4       	ldi	r24, 0x40	; 64
+		DDRD = (1U << 4U);
+  80:	80 e1       	ldi	r24, 0x10	; 16
   82:	8a b9       	out	0x0a, r24	; 10
-	PORTD &= ~(1U << 6U);
-  84:	8b b1       	in	r24, 0x0b	; 11
-  86:	8f 7b       	andi	r24, 0xBF	; 191
-  88:	8b b9       	out	0x0b, r24	; 11
-	#else
-		//round up by default
-		__ticks_dc = (uint32_t)(ceil(fabs(__tmp)));
-	#endif
-
-	__builtin_avr_delay_cycles(__ticks_dc);
-  8a:	8b e7       	ldi	r24, 0x7B	; 123
-  8c:	92 e9       	ldi	r25, 0x92	; 146
-  8e:	01 97       	sbiw	r24, 0x01	; 1
-  90:	f1 f7       	brne	.-4      	; 0x8e <main+0xe>
-  92:	00 c0       	rjmp	.+0      	; 0x94 <main+0x14>
-  94:	00 00       	nop
-    while (1) 
-    {
-		_delay_ms(150);
-		PORTD &= ~(1U << 6U);
-  96:	8b b1       	in	r24, 0x0b	; 11
-  98:	8f 7b       	andi	r24, 0xBF	; 191
-  9a:	8b b9       	out	0x0b, r24	; 11
-  9c:	8b e7       	ldi	r24, 0x7B	; 123
-  9e:	92 e9       	ldi	r25, 0x92	; 146
-  a0:	01 97       	sbiw	r24, 0x01	; 1
-  a2:	f1 f7       	brne	.-4      	; 0xa0 <main+0x20>
-  a4:	00 c0       	rjmp	.+0      	; 0xa6 <main+0x26>
-  a6:	00 00       	nop
+		DDRD &= ~(1U << 4U); // Set PD4 pin as input
+  84:	8a b1       	in	r24, 0x0a	; 10
+  86:	8f 7e       	andi	r24, 0xEF	; 239
+  88:	8a b9       	out	0x0a, r24	; 10
 		
-		_delay_ms(150);
+		
+		DDRD = (1U << 6U);
+  8a:	80 e4       	ldi	r24, 0x40	; 64
+  8c:	8a b9       	out	0x0a, r24	; 10
+		PORTD &= ~(1U << 6U);
+  8e:	8b b1       	in	r24, 0x0b	; 11
+  90:	8f 7b       	andi	r24, 0xBF	; 191
+  92:	8b b9       	out	0x0b, r24	; 11
+	
+	while(1)
+	{
+		if (PIND & (1<<4))
+  94:	4c 9b       	sbis	0x09, 4	; 9
+  96:	04 c0       	rjmp	.+8      	; 0xa0 <main+0x20>
 		PORTD |= (1U << 6U);
-  a8:	8b b1       	in	r24, 0x0b	; 11
-  aa:	80 64       	ori	r24, 0x40	; 64
-  ac:	8b b9       	out	0x0b, r24	; 11
-  ae:	ed cf       	rjmp	.-38     	; 0x8a <main+0xa>
+  98:	8b b1       	in	r24, 0x0b	; 11
+  9a:	80 64       	ori	r24, 0x40	; 64
+  9c:	8b b9       	out	0x0b, r24	; 11
+  9e:	fa cf       	rjmp	.-12     	; 0x94 <main+0x14>
+		else
+		PORTD &= ~(1U << 6U);
+  a0:	8b b1       	in	r24, 0x0b	; 11
+  a2:	8f 7b       	andi	r24, 0xBF	; 191
+  a4:	8b b9       	out	0x0b, r24	; 11
+  a6:	f6 cf       	rjmp	.-20     	; 0x94 <main+0x14>
 
-000000b0 <_exit>:
-  b0:	f8 94       	cli
+000000a8 <_exit>:
+  a8:	f8 94       	cli
 
-000000b2 <__stop_program>:
-  b2:	ff cf       	rjmp	.-2      	; 0xb2 <__stop_program>
+000000aa <__stop_program>:
+  aa:	ff cf       	rjmp	.-2      	; 0xaa <__stop_program>
