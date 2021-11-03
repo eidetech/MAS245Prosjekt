@@ -16,11 +16,7 @@ int main(void)
 	PORTD &= ~(1U << 6U); // Setting pin 6 of PORT D register to LOW.
     while (1) 
     {
-		_delay_ms(1000);
-		PORTD &= ~(1U << 6U); // Turn LED off
-		
-		_delay_ms(1000);
-		PORTD |= (1U << 6U);  // Turn LED on
+
     }
 }
 
