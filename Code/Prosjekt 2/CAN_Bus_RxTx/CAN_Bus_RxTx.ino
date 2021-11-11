@@ -6,34 +6,23 @@
 
 static CAN_message_t msg;
 
-// -------------------------------------------------------------
 void setup(void)
 {
-  delay(1000);
-  Serial.println(F("CAN Bus send and receive message test (Tx-Rx-Tx)"));
+  Serial.begin(9600);
+  Serial.println("CAN Bus send and receive message test (Tx-Rx-Tx)");
 
   Can0.begin(250000);
   Can1.begin(250000);  
-
-  //if using enable pins on a transceiver they need to be set on
-  pinMode(2, OUTPUT);
-  pinMode(35, OUTPUT);
-
-  digitalWrite(2, HIGH);
-  digitalWrite(35, HIGH);
 
   msg.ext = 0;
   msg.id = 0x00;
   msg.len = 1;
   msg.buf[0] = 0x00;
-
 }
 
-
-// -------------------------------------------------------------
 void loop(void)
 {
-  CAN_message_t inMsg;
+  CAN_message_t returMsg;
 
   // Send msg with Can0 bus:
   Can0.write(msg);
@@ -42,20 +31,20 @@ void loop(void)
   if (Can1.available()) 
   {
     Serial.println("Can1 is available.");
-    Can1.read(inMsg);
+    Can1.read(returMsg);
     Serial.print("CAN bus 1 reading: ");
-    Serial.println(inMsg.buf[0]);
+    Serial.println(returMsg.buf[0]);
   }
 
   // Return msg from Can0 with Can1 to Can0:
-  Can1.write(inMsg);
+  Can1.write(returMsg);
 
   if (Can0.available()) 
   {
     Serial.println("Can0 is available.");
-    Can0.read(inMsg);
+    Can0.read(returMsg);
     Serial.print("CAN bus 0 reading: ");
-    Serial.println(inMsg.buf[0]);
+    Serial.println(returMsg.buf[0]);
   }
 
     msg.buf[0]++;

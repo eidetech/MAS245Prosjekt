@@ -2,20 +2,21 @@
 #define Paddle_h
 
 #define SCREEN_HEIGHT 64
+#include "Arduino.h"
 
 enum side
 {
-  LEFT = 128-4,
-  RIGHT = 1
+  LEFT = 1,
+  RIGHT = 128-4
 };
 
 class Paddle
 {
 public:
-  int paddleWidth;
-  int paddleHeight;
-  int paddle_x;
-  int paddle_y;
+  uint8_t paddleWidth;
+  uint8_t paddleHeight;
+  uint8_t paddle_x;
+  uint8_t paddle_y;
 
   Paddle(side paddleSide);
   ~Paddle();
