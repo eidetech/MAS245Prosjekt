@@ -75,10 +75,14 @@ void loop(void)
   sensors_event_t a, g, temp;
   mpu.getEvent(&a, &g, &temp);
 
+  /*Leser IMUData*/
   imuReading = a.acceleration.x*10;
-  
+
+  /*Sender IMUData ut på CAN-bus*/
   msg.buf[0] = imuReading;
   Can0.write(msg);
+
+  /*Printer info på teensy skjerm*/
   Serial.println(imuReading);
   display.setCursor(1,1);
   display.print("Servostyring fra IMU");
@@ -89,27 +93,34 @@ void loop(void)
   CAN_message_t inMsg;
   if(Can0.available())
       {
+        /* Leser CAN fra RPI*/
         Can0.read(inMsg);
         if(inMsg.id == 0x300)
         {
+          /*Printer innkommende CAN*/
           display.setCursor(1,20);
           display.print("RX fra RPi: ");
           display.print(inMsg.buf[0]);
           }
           
+          /*Konverterer IMUdata til Servodata*/
           int val = map(inMsg.buf[0], 0,200, 0, 180);
+
+          /*Lager "dødgang* for IMU/*/
           if(inMsg.buf[0] > 80 && inMsg.buf[0] < 120)
           {
+            /*Setter servo i ro i midtstilling*/
             servo.write(92);
           }else
           {
             servo.write(val);
           }
+          /*Printer verdi som sendes til servo*/
           display.setCursor(1,30);
           display.print("Servo signal: ");
           display.print(val);
       }
-  
+  /*Oppdateringsfrekvens på skjermen*/
   display.display();
   delay(60);
 }
