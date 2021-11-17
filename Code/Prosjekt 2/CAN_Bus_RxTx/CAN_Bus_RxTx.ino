@@ -25,29 +25,33 @@ void loop(void)
   CAN_message_t returMsg;
 
   // Send msg with Can0 bus:
+  Serial.print("TX with Can0: ");
+  Serial.println(msg.buf[0]);
   Can0.write(msg);
-
+  delay(100);
   // Read msg from Can0 with Can1 bus:
   if (Can1.available()) 
   {
     Serial.println("Can1 is available.");
     Can1.read(returMsg);
-    Serial.print("CAN bus 1 reading: ");
+    Serial.print("Can1 reading: ");
     Serial.println(returMsg.buf[0]);
   }
-
+  delay(100);
   // Return msg from Can0 with Can1 to Can0:
   Can1.write(returMsg);
-
+  Serial.print("TX with Can1: ");
+  Serial.println(returMsg.buf[0]);
+  delay(100);
   if (Can0.available()) 
   {
     Serial.println("Can0 is available.");
     Can0.read(returMsg);
-    Serial.print("CAN bus 0 reading: ");
+    Serial.print("Can0 reading: ");
     Serial.println(returMsg.buf[0]);
   }
-
+  delay(100);
+  Serial.println("Adding 1 to msg.buf[0]");
     msg.buf[0]++;
-  
-  delay(20);
+ 
 }
